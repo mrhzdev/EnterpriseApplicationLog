@@ -1,7 +1,23 @@
 version: '3'
 services:
 
- ##########################################################
+  ##########################################################
+  php:
+    container_name: php
+    build:
+      context: ./php
+    volumes:
+      - "./app:/var/www/html"
+    depends_on:
+      - kibana
+      - elasticsearch
+      - logstash
+      - rabbitmq
+    ports:
+      - "9000:9000"
+    networks:
+      - log
+  ##########################################################
   rabbitmq:
     container_name: RabbitMQ
     image: rabbitmq:3-management-alpine
@@ -66,16 +82,17 @@ services:
       - log
   ##########################################################
   logstash:
-    container_name: LogStash    
+    container_name: LogStash
     image: docker.elastic.co/logstash/logstash-oss:6.7.0
     volumes:
-      - ./product.logstash.conf:/config/product.logstash.conf      
+      - ./access.logstash.conf:/config/access.logstash.conf
+      - ./logstash_template.json:/config/logstash_template.json
     links:
       - rabbitmq:AMQPServer
       - elasticsearch:elasticsearch
     networks:
       - log    
-    command: logstash -f /config/product.logstash.conf  
+    command: logstash -f /config/access.logstash.conf
     depends_on:
       - rabbitmq
       - elasticsearch
@@ -93,7 +110,6 @@ services:
     restart: on-failure
     networks:
       - log
-
 
 volumes:
   mq_data:
