@@ -6,8 +6,6 @@ services:
     container_name: php
     build:
       context: ./php
-    volumes:
-      - "./app:/var/www/html"
     depends_on:
       - kibana
       - elasticsearch
